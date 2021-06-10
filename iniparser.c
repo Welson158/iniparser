@@ -249,24 +249,37 @@ read_ini(struct read_ini **read_inip,
 		 char *filename)
 {
 	struct ini *ini;    
-    struct read_ini *read_ini = *read_inip;
+    	struct read_ini *read_ini = *read_inip;
     
-    if(!read_ini)
-    {
-        read_ini = malloc(sizeof(*read_ini));
-        *read_inip = read_ini;
-    }
-    else
-    {
-        free(read_ini->tmp);
-    }    
+    	if(!read_ini)
+    	{
+        	read_ini = malloc(sizeof(*read_ini));
+		if(!read_ini)
+			return NULL;
+		
+		memset(read_ini, 0, sizeof(*read_ini));
+        	*read_inip = read_ini;
+    	}
+    	else
+    	{
+        	free(read_ini->tmp);
+    	}    
         
 	read_ini->filename = filename;
+	read_ini->fin = fopen(filename, "r");
+	if(NULL == read_ini->fin)
+	{
+		free(read_ini);
+		read_ini = NULL;
+		*read_inip = NULL;
+		return NULL;
+	}
+
 	read_ini->current_line = 0;
 	read_ini->state = START;
 	read_ini->tmp = malloc(sizeof(*read_ini->tmp) * 4);
+	memset(read_ini->tmp, 0, sizeof(*read_ini->tmp) * 4);
 	read_ini->tmp_cap = 4;
-	read_ini->fin = fopen(filename, "r");
 
 	ini = parse_ini(read_ini);
 
